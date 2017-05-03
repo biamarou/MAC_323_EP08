@@ -36,7 +36,11 @@ public class KsTreeST<Value> {
 	Node tmp, ntmp;
 	boolean x;
 	
-	if (TreePoints == null) TreePoints = insert;
+	if (TreePoints == null) {
+	    TreePoints = insert;
+	    size++;
+	}
+
 	else {
 
 	    x = true;
@@ -63,21 +67,93 @@ public class KsTreeST<Value> {
 		}
 	    }
 
-	    if (tmp == null)
-		
+	    if (tmp == null) {
+	        if (x) {
+		    if (ntmp.point.y() < p.y())
+			ntmp.right = insert;
+		    else
+			ntmp.left = insert;
+		}
+
+		else {
+		    if (ntmp.point.x() < p.x())
+			ntmp.right = insert;
+		    else
+			ntmp.left = insert;
+		}
+		size++;
+	    }
+
+	    else {
+		tmp.value = val;
+	    }
 	}
     } // associate the value val with point p
 
     public Value get(Point2D p) {
+	Node tmp;
+	boolean x = true;
+	
+	for (tmp = TreePoints; tmp != null && !tmp.point.equals(p)) {
+		if (x) {
+		    if (tmp.point.x() < p.x())
+			tmp = tmp.right;
+		    
+		    else
+			tmp = tmp.left;
+		    x = false;
+		}
+
+		else {
+		    if (tmp.point.y() < p.y())
+			tmp = tmp.right;
+		    else
+			tmp = tmp.left;
+		    x = true;
+		    
+		}
+	}
+
+	if (tmp == null) return null;
+	else return tmp.value;
         
     } // value associated with point p 
 
     public boolean contains(Point2D p) {
-        
+        Node tmp;
+	boolean x = true;
+	
+	for (tmp = TreePoints; tmp != null && !tmp.point.equals(p)) {
+		if (x) {
+		    if (tmp.point.x() < p.x())
+			tmp = tmp.right;
+		    
+		    else
+			tmp = tmp.left;
+		    x = false;
+		}
+
+		else {
+		    if (tmp.point.y() < p.y())
+			tmp = tmp.right;
+		    else
+			tmp = tmp.left;
+		    x = true;
+		    
+		}
+	}
+
+	if (tmp == null) return false;
+	else return true;
+	
     } // does the symbol table contain point p? 
 
     public Iterable<Point2D> points() {
-        
+	Node tmp;
+	Bag<Point2D> AllPoints = new Bag<Point2D>();
+
+	
+	
     } // all points in the symbol table 
 
     public Iterable<Point2D> range(RectHV rect) {
