@@ -4,10 +4,10 @@ import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 
 public class PointST<Value> {
-    RedBlackBST points;
+    RedBlackBST<Point2D, Value> points;
     
     public PointST() {
-	points = new RedBlackBST();
+	points = new RedBlackBST<>();
     } // construct an empty symbol table of points 
 
     public boolean isEmpty() {
@@ -23,7 +23,7 @@ public class PointST<Value> {
     } // associate the value val with point p
 
     public Value get(Point2D p) {
-	return (Value)points.get(p);
+	return points.get(p);
     } // value associated with point p 
 
     public boolean contains(Point2D p) {
@@ -44,11 +44,21 @@ public class PointST<Value> {
     } // all points that are inside the rectangle 
 
     public Point2D nearest(Point2D p) {
-	if (points.isEmpty())
+	if (points.isEmpty()) {
 	    return null;
-	else {
-	    return (Point2D)points.floor(p);
 	}
+    
+	Point2D near_floor = points.floor(p);
+	Point2D near_ceil = points.ceiling(p);
+
+	if(near_floor == null) return near_ceil;
+	if(near_ceil == null) return near_floor;
+
+	if (near_floor.distanceSquaredTo(p) < near_ceil.distanceSquaredTo(p))
+	    return near_floor;
+	else
+	    return near_ceil;
+	
 
     } // a nearest neighbor to point p; null if the symbol table is empty 
 
