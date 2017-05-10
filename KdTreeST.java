@@ -2,6 +2,8 @@ import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 
+import java.lang.*;
+
 //o retangulo maior seria {[0,0]x[1,1]}
 
 public class KdTreeST<Value> {
@@ -32,13 +34,20 @@ public class KdTreeST<Value> {
     
     public int size() {
         return size;
-    } // number of points 
+    } // number of points
+
+    private boolean validate(Point2D p) {
+	if (p.x() > 1 || p.x() < 0 || p.y() > 1 || p.y() < 0)
+	    return false;
+	return true;
+    }
 
     public void put(Point2D p, Value val) {
 	Node insert = new Node(p.x(), p.y(), val);
 	Node tmp, ntmp;
 	boolean x;
 	ntmp = TreePoints;
+	if (!validate(p)) return;
 	
 	if (TreePoints == null) {
 	    insert.rect = new RectHV(0, 0, 1, 1);
@@ -75,22 +84,51 @@ public class KdTreeST<Value> {
 	    if (tmp == null) {
 	        if (x) {
 		    if (ntmp.point.y() <= p.y()) {
-			insert.rect = new RectHV(ntmp.rect.xmin(), ntmp.rect.ymin(), ntmp.rect.xmax(), ntmp.point.y());
+			try {
+			    insert.rect = new RectHV(ntmp.rect.xmin(), ntmp.point.y(), ntmp.rect.xmax(), ntmp.rect.ymax());
+			} catch (IllegalArgumentException e) {
+			    System.out.println(ntmp.rect.xmin());
+			    System.out.println(ntmp.point.y());
+			    System.out.println(ntmp.rect.xmax());
+			    System.out.println(ntmp.rect.ymax());
+			}
 			ntmp.right = insert;
 		    }
 		    else {
-			insert.rect = new RectHV(ntmp.rect.xmin(), ntmp.point.y(), ntmp.rect.xmax(), ntmp.rect.ymax());
+			try {
+			    insert.rect = new RectHV(ntmp.rect.xmin(), ntmp.rect.ymin(), ntmp.rect.xmax(), ntmp.point.y());
+			} catch (IllegalArgumentException e) {
+			   
+			    System.out.println(ntmp.rect.xmin());
+			    System.out.println(ntmp.rect.ymin());
+			    System.out.println(ntmp.rect.xmax());
+			    System.out.println(ntmp.point.y());
+			}
 			ntmp.left = insert;
 		    }
 		}
 
 		else {
 		    if (ntmp.point.x() <= p.x()) {
-			insert.rect = new RectHV(ntmp.point.x(), ntmp.rect.ymin(), ntmp.rect.xmax(), ntmp.rect.ymax());
+			try {
+			    insert.rect = new RectHV(ntmp.point.x(), ntmp.rect.ymin(), ntmp.rect.xmax(), ntmp.rect.ymax());
+			} catch(IllegalArgumentException e) {
+			    System.out.println(ntmp.point.x());
+			    System.out.println(ntmp.rect.ymin());
+			    System.out.println(ntmp.rect.xmax());
+			    System.out.println(ntmp.rect.ymax());
+			}
 			ntmp.right = insert;
 		    }
 		    else {
-			insert.rect = new RectHV(ntmp.rect.xmin(), ntmp.rect.ymin(), ntmp.point.x(), ntmp.rect.ymax());
+			try {
+			    insert.rect = new RectHV(ntmp.rect.xmin(), ntmp.rect.ymin(), ntmp.point.x(), ntmp.rect.ymax());
+			} catch (IllegalArgumentException e) {
+			    System.out.println(ntmp.rect.xmin());
+			    System.out.println(ntmp.rect.ymin());
+			    System.out.println(ntmp.point.x());
+			    System.out.println(ntmp.rect.ymax());
+			}
 			ntmp.left = insert;
 		    }
 		}
@@ -183,10 +221,10 @@ public class KdTreeST<Value> {
 	    if (rect.contains(tmp.point))
 		bag.add(tmp.point);
 
-	    if (rect.intersects(tmp.left.rect))
+	    if (tmp.left != null && rect.intersects(tmp.left.rect))
 		range(bag, tmp.left, rect);
 
-	    if (tmp.rect.intersects(tmp.right.rect))
+	    if (tmp.right != null && tmp.rect.intersects(tmp.right.rect))
 		range(bag, tmp.right, rect);
 	}
     }
@@ -215,20 +253,34 @@ public class KdTreeST<Value> {
 	if (isEmpty()) return null;
 	Point2D closest = null;
 	closest = nearest(p, closest, TreePoints);
-	System.out.println(closest);
+	Iterable<Point2D> teste = points();
 	return closest;
 	
     } // a nearest neighbor to point p; null if the symbol table is empty
-    /*
+
+    private Point2D nearest_k (Point2D p, Point2D closest, Node tmp, int k) {
+
+	if (closest == null || (closest.distanceSquaredTo(p) > tmp.point.distanceSquaredTo(p)))
+	    closest = tmp.point;
+	if (tmp.left != null && closest.distanceSquaredTo(p) > tmp.left.rect.distanceSquaredTo(p) && k > 0)
+	    closest = nearest_k(p, closest, tmp.left, k - 1);
+	if (tmp.right != null && closest.distanceSquaredTo(p) > tmp.right.rect.distanceSquaredTo(p) && k > 0)
+	    closest = nearest_k(p, closest, tmp.right, k - 1);
+	return closest;
+    }
+    
     public Iterable<Point2D> nearest(Point2D p, int k) {
 	if (size <= k) return points();
-	MaxPQ<Point2D> nearestPoints = new MaxPQ<Point2D>();
-	while (nearestPoints.size < k) {
-	    
+	int points = k;
+	Point2D closest = null;
+	Bag<Point2D> nearestPoints = new Bag<Point2D>();
+	while (points > 0) {
+	    nearestPoints.add(nearest_k (p, closest, TreePoints, points));
+	    points--;
 	}
-	    
+	return nearestPoints;
     }
-    */
+    
     public static void main(String[] args) {
 
     } // unit testing (required) 

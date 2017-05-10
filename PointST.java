@@ -2,6 +2,7 @@ import edu.princeton.cs.algs4.RedBlackBST;
 import edu.princeton.cs.algs4.Bag;
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
+import java.lang.Iterable;
 
 public class PointST<Value> {
     RedBlackBST<Point2D, Value> points;
@@ -47,18 +48,12 @@ public class PointST<Value> {
 	if (points.isEmpty()) {
 	    return null;
 	}
-    
-	Point2D near_floor = points.floor(p);
-	Point2D near_ceil = points.ceiling(p);
-
-	if(near_floor == null) return near_ceil;
-	if(near_ceil == null) return near_floor;
-
-	if (near_floor.distanceSquaredTo(p) < near_ceil.distanceSquaredTo(p))
-	    return near_floor;
-	else
-	    return near_ceil;
-	
+	Point2D near = null; 
+	Iterable<Point2D> allPoints = points();
+	for (Point2D pi : allPoints)
+	    if (near == null || near.distanceSquaredTo(p) > pi.distanceSquaredTo(p))
+		near = pi;
+	return near;    
 
     } // a nearest neighbor to point p; null if the symbol table is empty 
 
