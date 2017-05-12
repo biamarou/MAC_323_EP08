@@ -253,29 +253,65 @@ public class KdTreeST<Value> {
 	if (isEmpty()) return null;
 	Point2D closest = null;
 	closest = nearest(p, closest, TreePoints);
-	Iterable<Point2D> teste = points();
 	return closest;
 	
     } // a nearest neighbor to point p; null if the symbol table is empty
 
-    private Point2D nearest_k (Point2D p, Point2D closest, Node tmp, int k) {
-
-	if (closest == null || (closest.distanceSquaredTo(p) > tmp.point.distanceSquaredTo(p)))
+    private int first (Point2D p, Point2D closest, int iterations, Node tmp) {
+	  
+	if (closest == null || (closest.distanceSquaredTo(p) > tmp.point.distanceSquaredTo(p))) {
 	    closest = tmp.point;
-	if (tmp.left != null && closest.distanceSquaredTo(p) > tmp.left.rect.distanceSquaredTo(p) && k > 0)
-	    closest = nearest_k(p, closest, tmp.left, k - 1);
-	if (tmp.right != null && closest.distanceSquaredTo(p) > tmp.right.rect.distanceSquaredTo(p) && k > 0)
-	    closest = nearest_k(p, closest, tmp.right, k - 1);
-	return closest;
+	    iterations = iterations + 1;
+	}
+
+	if (tmp.left != null && closest.distanceSquaredTo(p) > tmp.left.rect.distanceSquaredTo(p)) {
+	    iterations = first(p, closest, iterations, tmp.left);
+	  
+	}
+	
+	if (tmp.right != null && closest.distanceSquaredTo(p) > tmp.right.rect.distanceSquaredTo(p)) {
+	    iterations = first(p, closest, iterations, tmp.right);
+	   
+	}
+	return iterations;
+    }
+
+    private class Search {
+	int k = 0;
+	Point2D near = null;
+    }
+
+    private Search nearest_k (Point2D p, Node tmp, Search s, int iterations) {
+
+	if (s.near == null || (s.near.distanceSquaredTo(p) > tmp.point.distanceSquaredTo(p))) {
+	    s.near = tmp.point;
+	    s.k++;
+	}
+	
+	if (tmp.left != null && s.near.distanceSquaredTo(p) > tmp.left.rect.distanceSquaredTo(p) && s.k < iterations)
+	    s = nearest_k(p, tmp.left, s, iterations);
+	if (tmp.right != null && s.near.distanceSquaredTo(p) > tmp.right.rect.distanceSquaredTo(p) && s.k < iterations)
+	    s = nearest_k(p, tmp.right, s, iterations);
+
+	return s;
     }
     
     public Iterable<Point2D> nearest(Point2D p, int k) {
 	if (size <= k) return points();
-	int points = k;
+	Search find;
 	Point2D closest = null;
+	int points, iterations;
+	points = iterations = 0;
+	points = first(p, closest, points, TreePoints);
+	if (points < k) points = k;
+	System.out.println("First " + points);
 	Bag<Point2D> nearestPoints = new Bag<Point2D>();
-	while (points > 0) {
-	    nearestPoints.add(nearest_k (p, closest, TreePoints, points));
+	
+	while (iterations < k) {
+	    Search s = new Search();
+	    find = nearest_k (p, TreePoints, s, points);
+	    nearestPoints.add(find.near);
+	    iterations++;
 	    points--;
 	}
 	return nearestPoints;
